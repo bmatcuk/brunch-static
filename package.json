@@ -23,7 +23,8 @@
   },
   "dependencies": {
     "anymatch": "^1.3.0",
-    "mkdirp": "^0.5.1"
+    "mkdirp": "^0.5.1",
+    "touch": "^1.0.0"
   },
   "devDependencies": {
     "brunch": "^1.8.5",

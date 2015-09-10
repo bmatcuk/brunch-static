@@ -1,8 +1,10 @@
-var BrunchStatic, anymatch, fs, mkdirp, path;
+var BrunchStatic, anymatch, fs, mkdirp, path, touch;
 
 anymatch = require('anymatch');
 
 mkdirp = require('mkdirp');
+
+touch = require('touch');
 
 path = require('path');
 
@@ -14,54 +16,90 @@ module.exports = BrunchStatic = (function() {
   BrunchStatic.prototype.type = 'template';
 
   function BrunchStatic(config) {
-    var ref, ref1, ref2, ref3;
+    var ref, ref1, ref2, ref3, ref4;
     this.outputDir = path.join(path.resolve(process.cwd()), (config != null ? (ref = config.paths) != null ? ref["public"] : void 0 : void 0) || 'public');
-    this.options = config != null ? (ref1 = config.plugins) != null ? ref1["static"] : void 0 : void 0;
+    this.watchDirs = (config != null ? (ref1 = config.paths) != null ? ref1.watched : void 0 : void 0) || ['app', 'test', 'vendor'];
+    this.options = config != null ? (ref2 = config.plugins) != null ? ref2["static"] : void 0 : void 0;
     this.processors = [];
-    if (((ref2 = this.options) != null ? (ref3 = ref2.processors) != null ? ref3.constructor : void 0 : void 0) === Array) {
+    if (((ref3 = this.options) != null ? (ref4 = ref3.processors) != null ? ref4.constructor : void 0 : void 0) === Array) {
       this.processors = this.options.processors;
     }
+    this.dependencies = {};
+    this.pattern = {
+      test: (function(_this) {
+        return function(filename) {
+          return _this.getProcessor(filename) !== null;
+        };
+      })(this)
+    };
   }
 
-  BrunchStatic.prototype.pattern = {
-    test: function(filename) {
-      return anymatch(this.processors.map(function(p) {
+  BrunchStatic.prototype.getProcessor = function(filename) {
+    var map, processorIdx;
+    map = function(p) {
+      if (p.handles.constructor === Function) {
+        return function(f) {
+          return p.handles(f);
+        };
+      } else {
         return p.handles;
-      }), filename);
+      }
+    };
+    processorIdx = anymatch(this.processors.map(map), filename, true);
+    if (processorIdx === -1) {
+      return null;
+    } else {
+      return this.processors[processorIdx];
     }
-  };
-
-  BrunchStatic.prototype.getDependencies = function(data, filename, callback) {
-    var deps, fm;
-    deps = [];
-    fm = frontMatter.loadFront(data);
-    if (fm.dependencies != null) {
-      deps = fm.dependencies;
-    }
-    if (fm.layout != null) {
-      deps.push(fm.layout);
-    }
-    return deps;
   };
 
   BrunchStatic.prototype.compile = function(data, filename, callback) {
-    var processor, processorIdx;
-    processorIdx = anymatch(this.processors.map(function(p) {
-      return p.handles;
-    }), filename, true);
-    if (processorIdx === -1) {
+    var dependency, i, len, processor, ref;
+    if (this.dependencies[filename]) {
+      ref = this.dependencies[filename];
+      for (i = 0, len = ref.length; i < len; i++) {
+        dependency = ref[i];
+        touch.sync(dependency);
+      }
+    }
+    processor = this.getProcessor(filename);
+    if (!processor) {
       callback();
       return;
     }
-    processor = this.processors[processorIdx];
     return processor.compile(data, filename, (function(_this) {
-      return function(err, content) {
-        var basePath, outputPath;
+      return function(err, content, dependencies, dontWrite) {
+        var basePath, j, k, len1, len2, outputPath, ref1, watched;
         if (err) {
           callback(err);
           return;
         }
-        basePath = processor.transformPath(filename);
+        if (dontWrite) {
+          callback();
+          return;
+        }
+        if (dependencies && dependencies.constructor === Array) {
+          for (j = 0, len1 = dependencies.length; j < len1; j++) {
+            dependency = dependencies[j];
+            if (_this.dependencies[dependency]) {
+              if (_this.dependencies[dependency].indexOf(filename) === -1) {
+                _this.dependencies[dependency].push(filename);
+              }
+            } else {
+              _this.dependencies[dependency] = [filename];
+            }
+          }
+        }
+        basePath = filename;
+        ref1 = _this.watchDirs;
+        for (k = 0, len2 = ref1.length; k < len2; k++) {
+          watched = ref1[k];
+          if (basePath.indexOf(watched) === 0) {
+            basePath = path.relative(watched, basePath);
+            break;
+          }
+        }
+        basePath = processor.transformPath(basePath);
         outputPath = path.join(_this.outputDir, basePath);
         return mkdirp(path.dirname(outputPath), function(err) {
           if (err) {
