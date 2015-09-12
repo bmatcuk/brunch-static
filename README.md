@@ -39,6 +39,7 @@ Below is a list of available processors. If you'd like your processor to be incl
 
   * [markdown](https://github.com/bmatcuk/marked-brunch-static)
   * [jade](https://github.com/bmatcuk/jade-brunch-static)
+  * handlebars is built-in
 
 ## Writing brunch-static Processors
 ### What Does brunch-static Do?
