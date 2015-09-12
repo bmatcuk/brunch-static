@@ -48,50 +48,59 @@ module.exports = class BrunchStatic
 
     # "touch" dependent files
     if @dependencies[filename]
-      touch.sync(dependency) for dependency in @dependencies[filename]
+      for dependency in @dependencies[filename]
+        do (dependency) =>
+          touch dependency, nocreate: true, (err) =>
+            if err
+              # some kind of error touching the file... remove it
+              idx = @dependencies[filename].indexOf dependency
+              @dependencies[filename].splice idx, 1 unless idx is -1
 
     # compile the file
     processor = @getProcessor filename
     unless processor
       do callback
       return
-    processor.compile data, filename, (err, content, dependencies, dontWrite) =>
+    processor.compile data, filename, (err, files, dependencies) =>
       if err
         callback err
         return
-      if dontWrite
-        # if we aren't writing it, we don't care about dependencies
+      unless files
         do callback
         return
 
       # update dependency information
       if dependencies and dependencies.constructor is Array
+        # remove existing dependencies
+        for key in Object.keys @dependencies
+          while (idx = @dependencies[key].indexOf(filename)) isnt -1
+            @dependencies[key].splice idx, 1
+        # add the new dependencies
         for dependency in dependencies
           if @dependencies[dependency]
-            if @dependencies[dependency].indexOf(filename) is -1
-              @dependencies[dependency].push filename
+            @dependencies[dependency].push filename
           else
             @dependencies[dependency] = [filename]
 
-      # compute output path - remove the watched path from the front,
-      # transform it through the processor, then make absolute
-      basePath = filename
-      for watched in @watchDirs
-        if basePath.indexOf(watched) is 0
-          basePath = path.relative watched, basePath
-          break
-      basePath = processor.transformPath basePath
-      outputPath = path.join @outputDir, basePath
+      for file in files
+        # compute output path - remove the watched path from the front,
+        # and turn it into an absolute path.
+        basePath = file.filename
+        for watched in @watchDirs
+          if basePath.indexOf(watched) is 0
+            basePath = path.relative watched, basePath
+            break
+        outputPath = path.join @outputDir, basePath
 
-      # write file
-      mkdirp path.dirname(outputPath), (err) =>
-        if err
-          callback err
-          return
-
-        fs.writeFile outputPath, content, (err) ->
+        # write file
+        mkdirp path.dirname(outputPath), (err) =>
           if err
             callback err
-          else
-            do callback
+            return
+
+          fs.writeFile outputPath, file.content, (err) ->
+            if err
+              callback err
+            else
+              do callback
 

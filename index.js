@@ -54,12 +54,27 @@ module.exports = BrunchStatic = (function() {
   };
 
   BrunchStatic.prototype.compile = function(data, filename, callback) {
-    var dependency, i, len, processor, ref;
+    var dependency, fn, i, len, processor, ref;
     if (this.dependencies[filename]) {
       ref = this.dependencies[filename];
+      fn = (function(_this) {
+        return function(dependency) {
+          return touch(dependency, {
+            nocreate: true
+          }, function(err) {
+            var idx;
+            if (err) {
+              idx = _this.dependencies[filename].indexOf(dependency);
+              if (idx !== -1) {
+                return _this.dependencies[filename].splice(idx, 1);
+              }
+            }
+          });
+        };
+      })(this);
       for (i = 0, len = ref.length; i < len; i++) {
         dependency = ref[i];
-        touch.sync(dependency);
+        fn(dependency);
       }
     }
     processor = this.getProcessor(filename);
@@ -68,52 +83,61 @@ module.exports = BrunchStatic = (function() {
       return;
     }
     return processor.compile(data, filename, (function(_this) {
-      return function(err, content, dependencies, dontWrite) {
-        var basePath, j, k, len1, len2, outputPath, ref1, watched;
+      return function(err, files, dependencies) {
+        var basePath, file, idx, j, k, key, l, len1, len2, len3, len4, m, outputPath, ref1, ref2, results, watched;
         if (err) {
           callback(err);
           return;
         }
-        if (dontWrite) {
+        if (!files) {
           callback();
           return;
         }
         if (dependencies && dependencies.constructor === Array) {
-          for (j = 0, len1 = dependencies.length; j < len1; j++) {
-            dependency = dependencies[j];
+          ref1 = Object.keys(_this.dependencies);
+          for (j = 0, len1 = ref1.length; j < len1; j++) {
+            key = ref1[j];
+            while ((idx = _this.dependencies[key].indexOf(filename)) !== -1) {
+              _this.dependencies[key].splice(idx, 1);
+            }
+          }
+          for (k = 0, len2 = dependencies.length; k < len2; k++) {
+            dependency = dependencies[k];
             if (_this.dependencies[dependency]) {
-              if (_this.dependencies[dependency].indexOf(filename) === -1) {
-                _this.dependencies[dependency].push(filename);
-              }
+              _this.dependencies[dependency].push(filename);
             } else {
               _this.dependencies[dependency] = [filename];
             }
           }
         }
-        basePath = filename;
-        ref1 = _this.watchDirs;
-        for (k = 0, len2 = ref1.length; k < len2; k++) {
-          watched = ref1[k];
-          if (basePath.indexOf(watched) === 0) {
-            basePath = path.relative(watched, basePath);
-            break;
-          }
-        }
-        basePath = processor.transformPath(basePath);
-        outputPath = path.join(_this.outputDir, basePath);
-        return mkdirp(path.dirname(outputPath), function(err) {
-          if (err) {
-            callback(err);
-            return;
-          }
-          return fs.writeFile(outputPath, content, function(err) {
-            if (err) {
-              return callback(err);
-            } else {
-              return callback();
+        results = [];
+        for (l = 0, len3 = files.length; l < len3; l++) {
+          file = files[l];
+          basePath = file.filename;
+          ref2 = _this.watchDirs;
+          for (m = 0, len4 = ref2.length; m < len4; m++) {
+            watched = ref2[m];
+            if (basePath.indexOf(watched) === 0) {
+              basePath = path.relative(watched, basePath);
+              break;
             }
-          });
-        });
+          }
+          outputPath = path.join(_this.outputDir, basePath);
+          results.push(mkdirp(path.dirname(outputPath), function(err) {
+            if (err) {
+              callback(err);
+              return;
+            }
+            return fs.writeFile(outputPath, file.content, function(err) {
+              if (err) {
+                return callback(err);
+              } else {
+                return callback();
+              }
+            });
+          }));
+        }
+        return results;
       };
     })(this));
   };
