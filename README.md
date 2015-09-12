@@ -49,7 +49,7 @@ Ok, so, first, what do you get with brunch-static?
 3. brunch-static will handle dependencies for interconnected files. Brunch won't handle dependencies since we aren't writing anything to the template file, so we need to do that ourselves.
 
 ### Processors
-Processors are kind of similar to Brunch plugins theselves: an object that has certain members and methods. It's recommended that you export a simple function from your processor instead of an object (that needs to be new'd) to make things easier for people using your processor. Your function can, of course, `new` an object if that's how you'd like to implement it:
+Processors are kind of similar to Brunch plugins theselves: an object that has certain members and methods. It's recommended that your project follows the naming scheme: `whatever-brunch-static` to make it easy to find in npm.
 
 ```javascript
 var MyStaticProcessor = function(config) { ... };
@@ -59,6 +59,7 @@ MyStaticProcessor.prototype = {
   compile: function(data, filename, callback) { ... }
 };
 
+// export a simple function to make it easier to include in brunch-config.coffee
 module.exports = function(config) { return new MyStaticProcessor(config); };
 ```
 
