@@ -3,7 +3,7 @@ Transform static files using brunch.
 
 [Brunch](http://brunch.io) is great for doing all sorts of transpiling, compiling, minifying, uglfying, combining, and other such activities on CSS and Javascript files. But what if you have a file that isn't CSS or Javascript (and doesn't transpile into those things), and you want to convert it into something else in your output? For example, maybe you don't want to write boring HTML when you could be using something more friendly (like [jade](http://jade-lang.com/)). Brunch isn't really designed for that.
 
-*Enter brunch-static.*
+**Enter brunch-static.**
 
 brunch-static is a plugin that makes it possible to write _other_ plugins (called "processors") that can operate on files, outputting a "static" file (or files) in your output directory. Several brunch plugins attempt to solve this problem on their own, but they all suffer from some drawback. It is the aim of brunch-static to solve these problems, while making it easy to write a static plugin.
 
@@ -34,7 +34,9 @@ exports.config =
 Below is a list of available processors. If you'd like your processor to be included in this list, [create an issue](https://github.com/bmatcuk/brunch-static/issues/new) with your project's URL and a description.
 
 * [html-brunch-static](https://github.com/bmatcuk/html-brunch-static)
+
   Build static websites using brunch and your favorite templating language. Supports layouts and partial views and currently supports the following templating languages:
+
   * [markdown](https://github.com/bmatcuk/marked-brunch-static)
   * [jade](https://github.com/bmatcuk/jade-brunch-static)
 
@@ -60,18 +62,18 @@ MyStaticProcessor.prototype = {
 module.exports = function(config) { return new MyStaticProcessor(config); };
 ```
 
-* *handles*
+* **handles**
   > _handles_ is an [anymatch](https://github.com/es128/anymatch) that will be used to determine if your processor can handle a given file. This means it can either be a string (using globs), a regex, or a function that takes a single parameter (the filename) and returns true if your processor can handle it, or false otherwise.
 
-* *compile*
+* **compile**
   > _compile_ is a function that will receive the contents of the file, the file's name, and a callback function. After you have finished processing the file's data, you will need to call the callback function with the following:
   >
   > * `callback(err, files, dependencies)`
-  >   * *err* informs brunch-static when something goes wrong. If there were no issues, pass null.
-  >   * *files* an array of objects in the form: `[ {filename: "...", content: "..."}, {...}, ... ]`
-  >     * *filename* is the relative path of the output file. For example, if the input path was `app/path/to/file.jade`, *filename* might be something like `app/path/to/file.html`. brunch-static will automatically remove any of the "watched" paths from *filename* (like `app` in this example) and place it in the output directory. In this example, the final path might be `public/path/to/file.html`.
-  >     * *content* is the result of your processor.
-  >   * *dependencies* is an array of relative paths to any dependencies. For example, you might have dependencies on: `[ 'app/path/to/layout.jade', 'app/path/to/partial.jade' ]`.
+  >   * **err** informs brunch-static when something goes wrong. If there were no issues, pass null.
+  >   * **files** an array of objects in the form: `[ {filename: "...", content: "..."}, {...}, ... ]`
+  >     * **filename** is the relative path of the output file. For example, if the input path was `app/path/to/file.jade`, **filename** might be something like `app/path/to/file.html`. brunch-static will automatically remove any of the "watched" paths from **filename** (like `app` in this example) and place it in the output directory. In this example, the final path might be `public/path/to/file.html`.
+  >     * **content** is the result of your processor.
+  >   * **dependencies** is an array of relative paths to any dependencies. For example, you might have dependencies on: `[ 'app/path/to/layout.jade', 'app/path/to/partial.jade' ]`.
   >
-  > If *files* is null or undefined, nothing will be written. If *dependencies* is null or undefined, no dependencies will be tracked.
+  > If **files** is null or undefined, nothing will be written. If **dependencies** is null or undefined, no dependencies will be tracked.
 
