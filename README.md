@@ -10,7 +10,7 @@ brunch-static is a plugin that makes it possible to write _other_ plugins (calle
 If you want to dive into writing your own processor, [jump down](#writing-brunch-static-processors). Otherwise, keep reading.
 
 ## Installation
-Install the plugin via npm with `npm install --save brunch-static`
+Install the plugin via npm with `npm install --save-dev brunch-static`
 
 Or manually:
 
