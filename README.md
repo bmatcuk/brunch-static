@@ -1,3 +1,5 @@
+![Release](https://img.shields.io/npm/v/brunch-static.svg)
+
 # brunch-static
 Transform static files using brunch.
 
