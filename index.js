@@ -53,7 +53,7 @@ module.exports = BrunchStatic = (function() {
   };
 
   BrunchStatic.prototype.compile = function(data, filename, callback) {
-    var err, processor;
+    var err, error, processor;
     processor = this.getProcessor(filename);
     if (!processor) {
       callback(null, '');
@@ -101,8 +101,8 @@ module.exports = BrunchStatic = (function() {
           });
         };
       })(this));
-    } catch (_error) {
-      err = _error;
+    } catch (error) {
+      err = error;
       return callback(err);
     }
   };
