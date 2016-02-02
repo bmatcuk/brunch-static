@@ -5,8 +5,15 @@ path = require 'path'
 fs = require 'fs'
 
 module.exports = class BrunchStatic
+  # We say we are a "stylesheet" plugin because javascript and template
+  # plugins will append to the javascript file. This is a problem because,
+  # if wrapping is enabled (like commonjs), this will cause a bunch of
+  # empty crap to be written to the javascript file. Stylesheets, on the
+  # other hand, don't have any wrapping. So, when we return an empty string
+  # to brunch after compiling, this will just result in an empty line in the
+  # css file, which will be removed by minifying anyway. It's a hack =(
   brunchPlugin: true
-  type: 'template'
+  type: 'stylesheet'
 
   constructor: (config) ->
     @outputDir = path.join(path.resolve(process.cwd()), config?.paths?.public or 'public')
@@ -16,8 +23,6 @@ module.exports = class BrunchStatic
     @processors = []
     if @options?.processors?.constructor is Array
       @processors = @options.processors
-
-    @dependencies = {}
 
     # brunch is expecting pattern to be a regex with a test() method
     @.pattern =
@@ -34,32 +39,10 @@ module.exports = class BrunchStatic
     if processorIdx is -1 then null else @processors[processorIdx]
 
   compile: (data, filename, callback) ->
-    # Callback takes an error and a result. We have two options here: return
-    # null for the result, or an empty string. If we return null, brunch will
-    # assume we didn't handle the file and try other plugins. It will also
-    # ignore our dependency information since we "didn't handle the file". If
-    # we return an empty string, brunch will handle dependencies correctly,
-    # but it will also append to the template file. If the user has brunch
-    # configured to wrap javascript (with commonjs, for example), this will
-    # cause a bunch of useless crap to be appended to the template file.
-    # Unfortunately, we cannot solve the latter problem without modifying
-    # brunch, but we can solve the former problem by tracking dependencies
-    # ourselves and using touch.sync() to trigger recompiles in brunch.
-
-    # "touch" dependent files
-    if @dependencies[filename]
-      for dependency in @dependencies[filename]
-        do (dependency) =>
-          touch dependency, nocreate: true, (err) =>
-            if err
-              # some kind of error touching the file... remove it
-              idx = @dependencies[filename].indexOf dependency
-              @dependencies[filename].splice idx, 1 unless idx is -1
-
     # compile the file
     processor = @getProcessor filename
     unless processor
-      do callback
+      callback null, ''
       return
     try
       processor.compile data, filename, (err, files, dependencies) =>
@@ -67,21 +50,8 @@ module.exports = class BrunchStatic
           callback err
           return
         unless files
-          do callback
+          callback null, ''
           return
-
-        # update dependency information
-        if dependencies and dependencies.constructor is Array
-          # remove existing dependencies
-          for key in Object.keys @dependencies
-            while (idx = @dependencies[key].indexOf(filename)) isnt -1
-              @dependencies[key].splice idx, 1
-          # add the new dependencies
-          for dependency in dependencies
-            if @dependencies[dependency]
-              @dependencies[dependency].push filename
-            else
-              @dependencies[dependency] = [filename]
 
         for file in files
           # compute output path - remove the watched path from the front,
@@ -96,14 +66,14 @@ module.exports = class BrunchStatic
           # write file
           mkdirp path.dirname(outputPath), (err) =>
             if err
-              callback err
-              return
+              console.log("ERROR: " + err);
+            else
+              fs.writeFile outputPath, file.content, (err) ->
+                if err
+                  console.log("ERROR: " + err);
 
-            fs.writeFile outputPath, file.content, (err) ->
-              if err
-                callback err
-              else
-                do callback
+        # done
+        callback null, {data: '', dependencies: dependencies}
     catch err
       callback err
 

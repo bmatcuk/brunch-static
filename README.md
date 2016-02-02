@@ -48,8 +48,7 @@ Below is a list of available processors. If you'd like your processor to be incl
 Ok, so, first, what do you get with brunch-static?
 
 1. brunch-static will write your output file(s), taking care to create subdirectories as necessary.
-2. brunch-static will not add any output to the brunch template file.
-3. brunch-static will handle dependencies for interconnected files. Brunch won't handle dependencies since we aren't writing anything to the template file, so we need to do that ourselves.
+2. brunch-static will not add any output to the brunch output files.
 
 ### Processors
 Processors are kind of similar to Brunch plugins theselves: an object that has certain members and methods. It's recommended that your project follows the naming scheme: `whatever-brunch-static` to make it easy to find in npm.
