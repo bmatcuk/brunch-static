@@ -13,7 +13,7 @@ fs = require('fs');
 module.exports = BrunchStatic = (function() {
   BrunchStatic.prototype.brunchPlugin = true;
 
-  BrunchStatic.prototype.type = 'stylesheet';
+  BrunchStatic.prototype.type = 'template';
 
   function BrunchStatic(config) {
     var ref, ref1, ref2, ref3, ref4;
