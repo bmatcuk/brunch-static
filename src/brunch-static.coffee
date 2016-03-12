@@ -5,15 +5,16 @@ path = require 'path'
 fs = require 'fs'
 
 module.exports = class BrunchStatic
-  # We say we are a "stylesheet" plugin because javascript and template
-  # plugins will append to the javascript file. This is a problem because,
+  # We say we are a "template" plugin because javascript plugins will
+  # append to the javascript file. This is a problem because,
   # if wrapping is enabled (like commonjs), this will cause a bunch of
   # empty crap to be written to the javascript file. Stylesheets, on the
-  # other hand, don't have any wrapping. So, when we return an empty string
-  # to brunch after compiling, this will just result in an empty line in the
-  # css file, which will be removed by minifying anyway. It's a hack =(
+  # other hand, don't have any wrapping but will trigger compilation watchers
+  # as if the CSS has been changed. Instead, templates that return an empty string
+  # to brunch after compiling, this will just result in an unwrapped but empty
+  # line to the JS, which will be removed by minifying anyway. It's a hack =(
   brunchPlugin: true
-  type: 'stylesheet'
+  type: 'template'
 
   constructor: (config) ->
     @outputDir = path.join(path.resolve(process.cwd()), config?.paths?.public or 'public')
