@@ -11,7 +11,7 @@ module.exports = class BrunchStatic
   # empty crap to be written to the javascript file. Stylesheets, on the
   # other hand, don't have any wrapping but will trigger compilation watchers
   # as if the CSS has been changed. Instead, templates that return an empty string
-  # to brunch after compiling, this will just result in an unwrapped but empty
+  # to brunch after compiling will just result in an unwrapped but empty
   # line to the JS, which will be removed by minifying anyway. It's a hack =(
   brunchPlugin: true
   type: 'template'
