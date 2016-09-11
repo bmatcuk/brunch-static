@@ -24,6 +24,9 @@ module.exports = BrunchStatic = (function() {
     if (((ref3 = this.options) != null ? (ref4 = ref3.processors) != null ? ref4.constructor : void 0 : void 0) === Array) {
       this.processors = this.options.processors;
     }
+    if (this.options.pathTransform) {
+      this.pathTransform = this.options.pathTransform;
+    }
     this.pattern = {
       test: (function(_this) {
         return function(filename) {
@@ -50,6 +53,11 @@ module.exports = BrunchStatic = (function() {
     } else {
       return this.processors[processorIdx];
     }
+  };
+
+  BrunchStatic.prototype.pathTransform = function(filename) {
+    console.log('wtf?');
+    return filename;
   };
 
   BrunchStatic.prototype.compile = function(data, filename, callback) {
@@ -82,7 +90,7 @@ module.exports = BrunchStatic = (function() {
                 break;
               }
             }
-            outputPath = path.join(_this.outputDir, basePath);
+            outputPath = path.join(_this.outputDir, _this.pathTransform(basePath));
             mkdirp(path.dirname(outputPath), function(err) {
               if (err) {
                 return console.log("ERROR: " + err);

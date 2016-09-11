@@ -27,10 +27,14 @@ exports.config =
   ...
   plugins:
     static:
+      pathTransform: ((filename) -> ...)
       processors: [
         ...
       ]
 ```
+
+* **pathTransform** _(default: `(f) -> f`)_
+  > _pathTransform_ converts the input path into the output path. The input to this function will be the file's path, relative to one of Brunch's `paths.watched` directories. For example, if you've configured Brunch to watch the `app` directory and you have a file named `app/pages/index.static.hbs`, then `pages/index.static.hbs` will be passed into _pathTransform_. The value returned from this function will be joined with Brunch's `paths.public` to form the final output path. So, in the earlier example, if you wanted files under the `pages` subdirectory to appear in the root of the output, you might write a _pathTransform_ such as: `(f) -> path.relative 'pages', f`. This would cause `app/pages/index.static.hbs` to output to `public/index.html`.
 
 ## Available Processors
 Below is a list of available processors. If you'd like your processor to be included in this list, [create an issue](https://github.com/bmatcuk/brunch-static/issues/new) with your project's URL and a description.

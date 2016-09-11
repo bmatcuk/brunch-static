@@ -24,6 +24,8 @@ module.exports = class BrunchStatic
     @processors = []
     if @options?.processors?.constructor is Array
       @processors = @options.processors
+    if @options.pathTransform
+      @pathTransform = @options.pathTransform
 
     # brunch is expecting pattern to be a regex with a test() method
     @.pattern =
@@ -38,6 +40,8 @@ module.exports = class BrunchStatic
         p.handles
     processorIdx = anymatch @processors.map(map), filename, true
     if processorIdx is -1 then null else @processors[processorIdx]
+
+  pathTransform: (filename) -> console.log('wtf?'); filename
 
   compile: (data, filename, callback) ->
     # compile the file
@@ -62,7 +66,7 @@ module.exports = class BrunchStatic
             if basePath.indexOf(watched) is 0
               basePath = path.relative watched, basePath
               break
-          outputPath = path.join @outputDir, basePath
+          outputPath = path.join @outputDir, @pathTransform basePath
 
           # write file
           mkdirp path.dirname(outputPath), (err) =>
