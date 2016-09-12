@@ -56,7 +56,6 @@ module.exports = BrunchStatic = (function() {
   };
 
   BrunchStatic.prototype.pathTransform = function(filename) {
-    console.log('wtf?');
     return filename;
   };
 

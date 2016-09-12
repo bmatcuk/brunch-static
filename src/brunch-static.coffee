@@ -41,7 +41,7 @@ module.exports = class BrunchStatic
     processorIdx = anymatch @processors.map(map), filename, true
     if processorIdx is -1 then null else @processors[processorIdx]
 
-  pathTransform: (filename) -> console.log('wtf?'); filename
+  pathTransform: (filename) -> filename
 
   compile: (data, filename, callback) ->
     # compile the file
