@@ -1,4 +1,4 @@
-exports.config =
+module.exports.config =
   paths:
     public: '.'
     watched: ['src']
@@ -12,6 +12,9 @@ exports.config =
   modules:
     wrapper: false
     definition: false
+
+  npm:
+    enabled: false
 
   sourceMaps: false
 
