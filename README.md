@@ -44,6 +44,8 @@ Below is a list of available processors. If you'd like your processor to be incl
   Build static websites using brunch and your favorite templating language. Supports layouts and partial views and currently supports the following templating languages:
 
   * [markdown](https://github.com/bmatcuk/marked-brunch-static)
+  * [nunjucks](https://github.com/bmatcuk/njk-brunch-static)
+  * [pug](https://github.com/bmatcuk/pug-brunch-static)
   * [jade](https://github.com/bmatcuk/jade-brunch-static)
   * handlebars is built-in
 
